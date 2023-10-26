@@ -1,6 +1,6 @@
 from typing import List, Optional
 import random
-
+import time
 
 class Board:
 
@@ -12,6 +12,7 @@ class Board:
 
         self.v = {'R':self.s[1], 'L':self.s[1], 'U':self.s[0], 'D':self.s[0]}
         self.v = {k: list(range(v)) for k,v in self.v.items()}
+        self.moves = 0
 
     def _init_board(self, configuration) -> List[List[str]]:
         return [list(row) for row in configuration.split('\n')]
@@ -57,20 +58,28 @@ class Board:
         for move in moves:
             if len(move) == 2 and move[0] in 'RLUD' and move[1].isdigit() and int(move[1]) in self.v[move[0]]:
                 getattr(self, move[0])(int(move[1]))   
+                self.moves += 1
                 if verbose: print(self)
             else:
                 if verbose: print('Illegal move')
+                return 'Illegal'
 
     def interactive(self):
+        self.moves = 0
         print(self)
         while not self.is_solved():
             move = input(f'Enter your move [R<i> L<i> U<i> D<i>] / exit: ')
             if move.lower() == 'exit':
                 break
+
             move = move.capitalize()
-            print(move)
             self.move([move], True)
-            print('-'*50)
+            if self.moves == 1:
+                st_time = time.time()
+            et_time = time.time() - st_time
+
+            print(f'moves: {self.moves} | time: {int(et_time)//60:02d}:{int(et_time%60):02d} | mps: {self.moves/et_time:.2f}')
+        print(f'Congradulations! You solved the puzzle in {self.moves} moves')
 
 
 def loopover(mixed_up_board: List[List[str]], solved_board: List[List[str]]) -> Optional[List[str]]:
